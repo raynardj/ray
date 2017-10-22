@@ -6,23 +6,23 @@ from PIL import Image
 
 def preproc(img, rgb_mean=[123.68, 116.779, 103.939]):
     """
-	preprocessing
-	Turn rgb into bgr on picture
-	img:input image, numpy array
-	rgb_mean:a list of r,g,b value, default [123.68, 116.779, 103.939]
-	"""
+    preprocessing
+    Turn rgb into bgr on picture
+    img:input image, numpy array
+    rgb_mean:a list of r,g,b value, default [123.68, 116.779, 103.939]
+    """
     rn_mean = np.array(rgb_mean, dtype=np.float32)
     return (img - rn_mean)[:, :, :, ::-1]
 
 
 def deproc(img, shp=None, rgb_mean=[123.68, 116.779, 103.939]):
     """
-	deprocessing
-	Turn bgr into rgb on picture
-	img:input image, numpy array
-	shp:output shape, default None and using the input shape
-	rgb_mean:a list of r,g,b value, default [123.68, 116.779, 103.939]
-	"""
+    deprocessing
+    Turn bgr into rgb on picture
+    img:input image, numpy array
+    shp:output shape, default None and using the input shape
+    rgb_mean:a list of r,g,b value, default [123.68, 116.779, 103.939]
+    """
     rn_mean = np.array(rgb_mean, dtype=np.float32)
     if not shp:
         shp = img.shape
@@ -46,7 +46,7 @@ def check_img_folder(img_dir):
     for j in img_path[:20]:
         print("-" * 45)
         print(j)
-    # print("-"*45)
+        # print("-"*45)
     right_count = 0;
     fault_count = 0
     for i in img_path:
@@ -72,6 +72,7 @@ def folder_split(folder_dir, percent=.7):
     folder_split(folder_dir,train_percent=.7)
     Input absolute path as parameter。
     Use system command "cp"
+    :type folder_dir: object
     """
     if list(folder_dir)[-1] != "/":
         folder_dir = u"%s/" % (folder_dir)
