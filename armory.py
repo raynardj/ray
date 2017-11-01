@@ -71,6 +71,7 @@ def tryimg(i):
     # from PIL import Image
     try:
         tmpimg = Image.open(i)
+        tmpimg.resize((100,100),Image.ANTIALIAS)
         tmpimg.close()
         #right_count += 1
         #print("Img Ok")
