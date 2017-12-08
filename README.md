@@ -49,5 +49,8 @@ from rayself.metrics import precision
 def dog_precision(y_true,y_pred):
     # assuming dog is your second category
     return precision(1,y_true,y_pred)
+
+# while compiling a keras model
+model.compile(loss='categorical cross',metrics=["accuracy",dog_precision],optimizer="Adam")
 ````
 
