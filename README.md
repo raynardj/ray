@@ -42,7 +42,6 @@ This will calculate the ratio,precision and recall of a specific category for cl
 ````python
 from rayself.metrics import precision
 
-
 # Precision is the fraction of detections
 # reported by the model that were correct.
 
@@ -53,4 +52,23 @@ def dog_precision(y_true,y_pred):
 # while compiling a keras model
 model.compile(loss='categorical cross',metrics=["accuracy",dog_precision],optimizer="Adam")
 ````
+
+## armory.py
+
+### preproc
+
+Preprocess before entering the cnn/resnet
+
+Notice: it does not scale element to ````[0,1]````
+
+### check_img_folder_multi
+
+check img folder with multi processing
+```python
+check_img_folder_multi('/data/cats/img/')
+```
+### folder_split
+
+Split folder the train/valid
+
 
