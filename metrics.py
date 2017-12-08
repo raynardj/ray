@@ -37,22 +37,15 @@ def recall(target, y_true, y_pred):
     Recall:
         Recall is the fraction of true events that were detected
     target: the target category
+
+    Use it as:
+    def mp_rcal(y_true, y_pred):
+        return recall(1, y_true, y_pred)
     """
     y_true_arg = K.argmax(y_true, axis=-1)
     y_pred_arg = K.argmax(y_pred, axis=-1)
+    # Ground truthly, how many data belongs to the target category
     istarg = K.cast(K.equal(y_true_arg, target), K.floatx())
+    # The distribution of "Model guessed right"
     isright = K.cast(K.equal(y_true_arg, y_pred_arg), K.floatx())
-    preistarg = K.cast(K.equal(y_pred_arg, target), K.floatx())
     return K.sum(istarg * isright) / K.sum(istarg)
-
-
-def mp_rcal(y_true, y_pred):
-    return recall(1, y_true, y_pred)
-
-
-def fp_rcal(y_true, y_pred):
-    return recall(2, y_true, y_pred)
-
-
-def rd_rcal(y_true, y_pred):
-    return recall(3, y_true, y_pred)
