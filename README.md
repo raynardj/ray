@@ -69,6 +69,16 @@ check_img_folder_multi('/data/cats/img/')
 ```
 ### folder_split
 
-Split folder the train/valid
+Split folder to train/valid
 
+```python
+from rayself.armory import folder_split
+
+# The path we input contains sub-folders(categories)
+
+folder_split("/data/animals",percent=.8)
+
+# percent : the percentage of train data
+
+```
 
