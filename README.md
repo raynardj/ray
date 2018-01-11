@@ -1,4 +1,4 @@
-# Python 3 Program
+# Python 3 self made program for deep learning
 
 ## lprint.py
 
@@ -79,6 +79,18 @@ from rayself.armory import folder_split
 folder_split("/data/animals",percent=.8)
 
 # percent : the percentage of train data
+
+```
+### one_hot
+
+Turn index array to one hot encoded array
+
+```python
+
+from rayself.armory import one_hot
+
+# say if we have a array which labels 5 classes
+one_hot(label_array, num_classes=5)
 
 ```
 
