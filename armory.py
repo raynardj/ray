@@ -3,7 +3,9 @@ import os
 from glob import glob
 from PIL import Image
 from multiprocessing import Pool
-
+from keras.layers import Dense, Dropout, Conv2D, LSTM, Flatten, Lambda, Layer, MaxPool2D, GlobalAveragePooling2D, BatchNormalization
+import tensorflow as tf
+import keras.backend as K
 
 def preproc(img, rgb_mean=[123.68, 116.779, 103.939]):
     """
@@ -161,3 +163,16 @@ def folder_split(folder_dir, percent=.7):
                 cat_div_list[cate_][tt])
             map(lambda pair: os.system("cp %s %s" % (pair[0], pair[1])), cat_div_list[cate_][tt])
     return cat_div_list
+
+def one_hot(array,num_classes=None):
+    """
+    one_hot encoding the numpy array
+    :param array: input array, rank should be 1
+    :param num_classes: number of classes, if not specify, we'll use the max index +1 as class number
+    :return: return the onehot encoded array
+    """
+    assert len(array.shape) ==1, "In put dimemsion not right, should be 1."
+    if num_classes == None:
+        num_classes=array.max()+1
+    eye=np.eye(num_classes)
+    return eye[array]

@@ -30,7 +30,8 @@ def precision(target, y_true, y_pred):
     isright = K.cast(K.equal(y_true_arg, y_pred_arg), K.floatx())
     # The distribution of model predicted as target cate, right or wrong
     preistarg = K.cast(K.equal(y_pred_arg, target), K.floatx())
-    return K.sum(istarg * isright) / (K.sum(preistarg))
+    return K.mean(K.equal(istarg * isright,preistarg))
+    # return K.cast(K.sum(istarg * isright) / (K.sum(preistarg)), K.floatx())
 
 def recall(target, y_true, y_pred):
     """
@@ -44,8 +45,8 @@ def recall(target, y_true, y_pred):
     """
     y_true_arg = K.argmax(y_true, axis=-1)
     y_pred_arg = K.argmax(y_pred, axis=-1)
-    # Ground truthly, how many data belongs to the target category
+    # Ground truth, how many data belongs to the target category
     istarg = K.cast(K.equal(y_true_arg, target), K.floatx())
     # The distribution of "Model guessed right"
     isright = K.cast(K.equal(y_true_arg, y_pred_arg), K.floatx())
-    return K.sum(istarg * isright) / K.sum(istarg)
+    return K.mean(K.equal(istarg * isright,istarg), K.floatx())
