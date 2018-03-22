@@ -49,4 +49,4 @@ def recall(target, y_true, y_pred):
     istarg = K.cast(K.equal(y_true_arg, target), K.floatx())
     # The distribution of "Model guessed right"
     isright = K.cast(K.equal(y_true_arg, y_pred_arg), K.floatx())
-    return K.mean(K.equal(istarg * isright,istarg), K.floatx())
+    return K.mean(K.equal(istarg * isright,istarg))
