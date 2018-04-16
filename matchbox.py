@@ -27,6 +27,36 @@ class Trainer:
         """
         Pytorch trainer
         fields: the fields you choose to print out
+        is_log: writing a log？
+        
+        Training:
+        
+        write action funtion for a step of training,
+        assuming a generator will spit out tuple x,y,z in each:
+        
+        def action(*args,**kwargs):
+            x,y,z = args[0]
+            x,y,z = Variable(x).cuda(),Variable(y).cuda(),Variable(z).cuda()
+            
+            #optimizer is a global variable, or many different optimizers if you like
+            sgd.zero_grad()
+            adam.zero_grad()
+            
+            # model is a global variable, or many models if you like
+            y_ = model(x)
+            y2_ = model_2(z)
+            
+            ...... more param updating details here
+            
+            return {"loss":loss.data[0],"acc":accuracy.data[0]}
+            ...
+        
+        then pass the function to object 
+        trainer=Trainer(...)
+        trainer.action=action
+        trainer.train(epochs = 30)
+        
+        same work for validation:trainer.val_action = val_action
         """
         self.batch_size=batch_size
         self.dataset = dataset
@@ -128,6 +158,7 @@ class Trainer:
         t.set_description(desc)
             
     def todataframe(self,dict_):
+        """return a dataframe on the train log dictionary"""
         tracks=[]
         for i in range(len(dict_)):
             tracks+=dict_[i]
