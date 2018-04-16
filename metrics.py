@@ -38,7 +38,6 @@ def recall(target, y_true, y_pred):
     Recall:
         Recall is the fraction of true events that were detected
     target: the target category
-
     Use it as:
     def mp_rcal(y_true, y_pred):
         return recall(1, y_true, y_pred)
