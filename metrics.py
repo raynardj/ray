@@ -50,3 +50,14 @@ def recall(target, y_true, y_pred):
     # The distribution of "Model guessed right"
     isright = K.cast(K.equal(y_true_arg, y_pred_arg), K.floatx())
     return K.mean(K.equal(istarg * isright,istarg))
+
+def fscore(target, y_true, y_pred):
+    """
+    fscore:
+    Use it as:
+    def mp_f(y_true, y_pred):
+        return fscore(1, y_true, y_pred)
+    """
+    rc = recall(target, y_true, y_pred)
+    prec = precision(target, y_true, y_pred)
+    return 2*(rc*prec)/(rc+prec)
