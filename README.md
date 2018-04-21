@@ -119,16 +119,20 @@ def action(*args,**kwargs):
 
 **matchbox** deosn't over worry about this, but it allows you to save in a frequency or condition you can customize, easy as this:
 
-```
+when writing a step function:
+
+```python
 def action(*args,**kwargs):
-    ...other codes...
+    ...usual codes...
     i = kwargs["ite"] # iteration index
     e = kwargs["epoch"]
     if i %30 ==29: # for each 30 iterations
-        if loss < 0.2: # save model if certain condition is made, if you like
+        if loss < 0.2: # save model if certain condition is met, if you like
             torch.save(model.state_dict(),"model1.0.%s.%s.pkl"%(e,i))
-    ...other codes...
+    ...usual codes...
 ```
+
+Same trick also works for val_action 
 
 ## lprint.py
 
