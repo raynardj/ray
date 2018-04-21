@@ -6,6 +6,8 @@ A tool box for pytorch
 
 ```python
 from p3self.matchbox import Trainer
+# train_set is a pytorch dateset class
+# if you don't set the arg: val_dataset, it won't run validation.
 trainer = Trainer(train_set,batch_size=8,print_on=20)
 ```
 
@@ -28,20 +30,46 @@ def action(*args,**kwargs):
     y_ = model(x)
     
     loss = loss_func(y,y_)
-    accuracy = some_calculation_about_accuracy(y,y_)
+    score = some_calculation_about_score(y,y_)
+    score_corrupt = another_kind_of_score(y,y_)
     loss.backward()
     optimizer.step()
     return {"loss":loss.data[0],
-            "acc":accuracy.data[0]}
+            "score":score.data[0],
+            "score_corrupt":score_corrupt.data[0],
+            }
 ```
 #### Now assign the function to the trainer
 ```python
 trainer.action=action
 ```
-#### Train the model
+#### Train & Tracking 
 ```python
-trainer.train(3) # for training 3 epochs
+trainer.train(4) # for training 4 epochs
 ```
+
+Then you will see progress bars running for each epoch like following
+```
+⭐[ep_0_i_199]	loss	1.341✨	score	1.725✨	score_corrupt	2.387: 100%|██████████| 200/200 [00:23<00:00,  8.47it/s]
+😎[val_ep_0_i_22]	loss	1.255😂	score	1.722😂	score_corrupt	2.475: 100%|██████████| 23/23 [00:00<00:00, 24.03it/s]
+⭐[ep_1_i_199]	loss	0.539✨	score	2.010✨	score_corrupt	3.999: 100%|██████████| 200/200 [00:25<00:00,  7.82it/s]
+😎[val_ep_1_i_22]	loss	0.640😂	score	2.100😂	score_corrupt	3.948: 100%|██████████| 23/23 [00:00<00:00, 24.53it/s]
+⭐[ep_2_i_199]	loss	0.311✨	score	2.315✨	score_corrupt	4.931: 100%|██████████| 200/200 [00:25<00:00,  7.94it/s]
+😎[val_ep_2_i_22]	loss	0.527😂	score	2.484😂	score_corrupt	4.774: 100%|██████████| 23/23 [00:01<00:00, 18.98it/s]
+⭐[ep_3_i_199]	loss	0.198✨	score	2.631✨	score_corrupt	5.640: 100%|██████████| 200/200 [00:24<00:00,  8.26it/s]
+😎[val_ep_3_i_22]	loss	0.487😂	score	2.852😂	score_corrupt	5.420: 100%|██████████| 23/23 [00:00<00:00, 24.15it/s]
+```
+
+To save the training/validation record
+```python
+trainer.save_track(your_file_path_here,val_filepath=another_csv_path)
+```
+All the epochs will be saved to the csv file, or 2 csv files if you have validation record to save.
+
+```val_filepath``` is optional
+
+You can easily read the csv file to plot any charts you like.
+
 #### Validation data
 Define a val_action for a validation step
 ```python
@@ -87,7 +115,20 @@ def action(*args,**kwargs):
     return {"loss":loss.data[0],
             "acc":accuracy.data[0]}
 ```
+### What if I want to save the model?
 
+**matchbox** deosn't over worry about this, but it allows you to save in a frequency or condition you can customize, easy as this:
+
+```
+def action(*args,**kwargs):
+    ...other codes...
+    i = kwargs["ite"] # iteration index
+    e = kwargs["epoch"]
+    if i %30 ==29: # for each 30 iterations
+        if loss < 0.2: # save model if certain condition is made, if you like
+            torch.save(model.state_dict(),"model1.0.%s.%s.pkl"%(e,i))
+    ...other codes...
+```
 
 ## lprint.py
 

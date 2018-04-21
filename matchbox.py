@@ -74,6 +74,8 @@ class Trainer:
         self.track=dict()
         self.fields=fields
         self.is_log=is_log
+
+        self.epoch_now=0
         
     def train(self,epochs,name=None,log_addr=None):
         """
@@ -87,6 +89,7 @@ class Trainer:
         if log_addr[-1]!="/": log_addr += "/"
             
         for epoch in range(epochs):
+            self.epoch_now=epoch
             self.track[epoch]=list()
             self.run(epoch)
         if self.is_log:
@@ -165,6 +168,12 @@ class Trainer:
 
         return pd.DataFrame(tracks)
     
-    def save_track(self,filepath):
-        self.todataframe(self.track).to_csv(filepath)
-        self.todataframe(self.val_track).to_csv("val_"+filepath)
+    def save_track(self,filepath,val_filepath=None):
+        """
+        Save the track to csv files in a path you designated,
+        :param filepath: a file path ended with .csv
+        :return: None
+        """
+        self.todataframe(self.track).to_csv(filepath,index=False)
+        if val_filepath:
+            self.todataframe(self.val_track).to_csv(val_filepath,index=False)
