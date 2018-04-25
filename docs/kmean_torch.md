@@ -44,11 +44,13 @@ class iou_km(kmeans_core):
     
     def calc_distance(self,dt):
         # calculation steps here
-        # dt is the data batch , size = (batch_size * dimension)
+        # dt is the data batch , size = (batch_size , dimension)
         # self.cent is the centeroid, size = (k,dim)
-        # the return distance, size = (batch_size * k), from each point's distance to centeroids
+        # the return distance, size = (batch_size , k), from each point's distance to centeroids
         return distance
     
 ```
 
 Then use the inherited class iou_km
+
+Notice: When design the distance function, use matrix operations, avoid python loop as much as possible to best harnesting the power of cuda
