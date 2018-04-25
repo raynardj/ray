@@ -3,6 +3,7 @@ from keras.preprocessing import image
 from p3self import lprint
 import bcolz
 import numpy as np
+from multiprocessing import Pool
 
 class bcolzer:
     """
@@ -12,10 +13,10 @@ class bcolzer:
         """
         if you use self.empety_bcolz("bcolz_dir","b_shape")
         you'll have to setup the generator, self.set_gen(your_generator)
-
+        
         if you use self.empety_image_bcolz
         you'll have to set you img dir using self.img_gen()
-
+        
         bz=bcolzer()
         bz.img_gen("/dir_to_your_img_folder",with_class=True)
         bz.empety_img_bcolz("/dir_to_your_img_bcolz","/dir_to_your_label_bcolz") # insert the empety bcolz array
@@ -31,7 +32,7 @@ class bcolzer:
         else:
             self.l.p("type_error","no bcolzer type specified\nIt could be \"img\" for image")
         self.func()
-
+            
     def img_gen(self,img_dir,with_class=False,
                 batch_size=32,img_shape=(224,224),shuffle=True,seed=0):
         """
@@ -52,11 +53,11 @@ class bcolzer:
                                         target_size=img_shape,
                                         shuffle=shuffle)
         return self.gen
-
+    
     def set_gen(self,gen):
         self.gen=gen
         self.batch_size=self.gen.batch_size
-
+    
     def empety_img_bcolz(self,b_dir,cls_b_dir=None):
         """
         Create empety bcolz array
@@ -73,7 +74,7 @@ class bcolzer:
                     self.gen.num_class))
             else:
                 self.l.p("class_label_dir","class label dir not set, run self.empety_img_bcolz()")
-
+    
     def empety_bcolz(self,b_dir,b_shape):
         """
         Empety bcolz array
@@ -112,7 +113,7 @@ class bcolzer:
                     return x[0]
             self.roll_func=default_func
         self.l.p("set_roll_process_func",self.roll_func.__doc__)
-
+    
     def eat(self):
         """
         Shipping data from the generator,
@@ -135,3 +136,33 @@ class bcolzer:
             sys.stdout.write("\r[index/total]\t%s/%s\t%s"%(idx,self.gen.n,self.bc.shape))
             idx+=self.batch_size
         self.l.p("gen2bcolz","The transformation is done")
+
+#     def army_eat(self,thread=5):
+#         """
+#         Shipping data from the generator,
+#         to the bcolz
+#         """
+#         idx=0
+#         if not self.roll_func:
+#             self.func()
+#         steps=int(self.gen.n/self.batch_size)
+#         p=Pool(thread)
+#         self_i=dict({
+#             ""
+#         })
+#         p.map(eat_line,range(steps))
+#         self.l.p("gen2bcolz","The transformation is done")
+#
+# def eat_line(self_i):
+#     idx = i * self.batch_size
+#     new = self.gen.next()
+#     # print(self.bc.shape)
+#     # print(new[0].shape)
+#     if self.with_class:
+#         self.bc.append(self.roll_func(new[0]))  # append with same shape(besides shape 0 )
+#         self.cls_bc.append(new[1])
+#         self.cls_bc.flush()  # store the label to hd
+#     else:
+#         self.bc.append(self.roll_func(new))
+#     self.bc.flush()  # store the output to hd
+#     sys.stdout.write("\r[index/total]\t%s/%s\t%s" % (idx, self.gen.n, self.bc.shape))
