@@ -1,8 +1,16 @@
 # Python 3 self made program for deep learning
 
-## [matchbox.py](https://raynardj.github.io/p3self/docs/matchbox)
+## matchbox.py
 
-A tool box for pytorch
+A tool box for pytorch, A wrapper around trainer
+
+Full introduction [here](https://raynardj.github.io/p3self/docs/matchbox)
+
+## kmean_torch.py
+
+The core class for cuda accelerated kmeans by batch
+
+Full introduction [here](https://raynardj.github.io/p3self/docs/kmean_torch)
 
 ## lprint.py
 
