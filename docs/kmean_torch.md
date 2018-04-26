@@ -30,7 +30,7 @@ Here we have the cluster index
 ```python
 idx = km.idx
 ```
-## Side Configure and Hacking
+## Self defining distance function
 
 Suppose you are clustering anchor box for object detetion.
 
