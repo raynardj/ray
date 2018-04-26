@@ -30,7 +30,7 @@ Here we have the cluster index
 ```python
 idx = km.idx
 ```
-## Self defining distance function
+## Self defined distance function
 
 Suppose you are clustering anchor box for object detetion.
 
