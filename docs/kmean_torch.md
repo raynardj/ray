@@ -34,23 +34,45 @@ idx = km.idx
 
 Suppose you are clustering anchor box for object detetion.
 
-You use a very specific distance function calculated from IOU(Intersection Over Union)
+We want use a very specific distance function calculated from IOU(Intersection Over Union)
 
-You can tweak the kmeans like the following:
+So we tweak the kmeans like the following:
+
 ```python
 class iou_km(kmeans_core):
     def __init__(self, k, data_array, batch_size=1000, epochs=200):
-        super(iou_km,self).__init__(k, data_array, batch_size=batch_size, epochs=epochs)
-    
-    def calc_distance(self,dt):
-        # calculation steps here
-        # dt is the data batch , size = (batch_size , dimension)
-        # self.cent is the centeroid, size = (k,dim)
-        # the return distance, size = (batch_size , k), from each point's distance to centeroids
+        super(iou_km, self).__init__(k, data_array, batch_size=batch_size, epochs=epochs)
+
+    def calc_distance(self, dt):
+        """
+        calculation steps here
+        dt is the data batch , size = (batch_size , dimension)
+        self.cent is the centeroid, size = (k,dim)
+        the return distance, size = (batch_size , k), from each point's distance to centeroids
+        """
+        bs = dt.size()[0]
+        box = dt.unsqueeze(1).repeat(1, self.k, 1)
+        anc = self.cent.unsqueeze(0).repeat(bs, 1, 1)
+
+        outer = torch.max(box[..., 2:4], anc[..., 2:4])
+        inner = torch.min(box[..., 2:4], anc[..., 2:4])
+
+        inter = inner[..., 0] * inner[..., 1]
+        union = outer[..., 0] * outer[..., 1]
+
+        distance = 1 - inter / union
+
         return distance
-    
 ```
 
 Then use the inherited class iou_km
+
+```python
+kiou = iou_km(k = 9,data_array = bounding_box_label_array)
+
+kiou.run()
+```
+
+You can define your own kmeans by batch run on pytorch with other distance function in above way.
 
 Notice: When design the distance function, use matrix operations, avoid python loop as much as possible to best harnesting the power of cuda

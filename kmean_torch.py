@@ -8,6 +8,7 @@ from torch import Tensor
 
 CUDA = torch.cuda.is_available()
 
+
 class kmeans_core:
     def __init__(self, k, data_array, batch_size=1000, epochs=200):
         """
@@ -24,13 +25,9 @@ class kmeans_core:
         self.batch_size = batch_size
         self.dataloader = DataLoader(self.dataset, batch_size=batch_size, shuffle=True)
         self.iters = len(self.dataloader)
-        if CUDA:
-            self.cent = self.cent.cuda()
-
 
     def get_ds(self):
-        return TensorDataset(data_tensor=Tensor(self.data_array),
-                             target_tensor=torch.zeros(self.data_array.shape[0]))
+        return TensorDataset(data_tensor=Tensor(self.data_array), target_tensor=torch.zeros(self.data_array.shape[0]))
 
     def run(self):
         for e in range(self.epochs):
@@ -40,10 +37,8 @@ class kmeans_core:
             for i in t:
                 dt, _ = next(gen)
                 dt = Variable(dt)
-                if CUDA:
-                    dt = dt.cuda()
                 self.step(dt)
-                t.set_description("[epoch:%s\t iter:%s] \tk:%s" % (e, i, self.k))
+                t.set_description("[epoch:%s\t iter:%s] \tk:%s\tdistance:%.3f" % (e, i, self.k, self.distance))
 
             if self.cent.size()[0] == start.size()[0]:
                 if self.cent.sum().data[0] == start.sum().data[0]:
@@ -72,6 +67,7 @@ class kmeans_core:
 
     def calc_idx(self, dt):
         distance = self.calc_distance(dt)
+        self.distance = distance.mean().data[0]
         val, idx = torch.min(distance, dim=-1)
         return idx
 
@@ -79,7 +75,8 @@ class kmeans_core:
         z = Variable(torch.zeros(self.k, self.dim))
         o = Variable(torch.zeros(self.k))
         ct = o.index_add(0, idx, Variable(torch.ones(dt.size()[0])))
-        # slice used to remove zero
+
+        # slice to remove empety sum (no more such centeroid)
         slice_ = (ct > 0)
 
         cent_sum = z.index_add(0, idx, dt)[slice_.view(-1, 1)].view(-1, self.dim)
@@ -87,3 +84,28 @@ class kmeans_core:
 
         self.cent = cent_sum / ct
         self.k = self.cent.size()[0]
+
+class iou_km(kmeans_core):
+    def __init__(self, k, data_array, batch_size=1000, epochs=200):
+        super(iou_km, self).__init__(k, data_array, batch_size=batch_size, epochs=epochs)
+
+    def calc_distance(self, dt):
+        """
+        calculation steps here
+        dt is the data batch , size = (batch_size , dimension)
+        self.cent is the centeroid, size = (k,dim)
+        the return distance, size = (batch_size , k), from each point's distance to centeroids
+        """
+        bs = dt.size()[0]
+        box = dt.unsqueeze(1).repeat(1, self.k, 1)
+        anc = self.cent.unsqueeze(0).repeat(bs, 1, 1)
+
+        outer = torch.max(box[..., 2:4], anc[..., 2:4])
+        inner = torch.min(box[..., 2:4], anc[..., 2:4])
+
+        inter = inner[..., 0] * inner[..., 1]
+        union = outer[..., 0] * outer[..., 1]
+
+        distance = 1 - inter / union
+
+        return distance
