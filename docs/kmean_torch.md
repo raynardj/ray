@@ -1,7 +1,10 @@
-# Kmean torch
+# KMeans on batch, accelerated on Pytorch
 
-A cuda accelerated kmeans by batch
+When you have a hammer, every problem looks like nail to you.
 
+When you have a torch, you burn every thing...
+
+You can also [check here](https://raynardj.github.io/p3self/docs/gowalla_preprocess) for a use case on gowalla dataset
 
 ## Problem:
 Assume we have a large array A, will be clustered in a big centroid number: K
@@ -77,3 +80,5 @@ kiou.run()
 You can define your own kmeans by batch run on pytorch with other distance function in above way.
 
 Notice: When design the distance function, use matrix operations, avoid python loop as much as possible to best harnesting the power of cuda
+
+
