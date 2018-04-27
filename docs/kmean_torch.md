@@ -2,7 +2,7 @@
 
 When you have a hammer, every problem looks like nail to you.
 
-When you have a torch, you burn every thing...
+When we have a torch, wo do try burning everything , even using it for kmeans.
 
 You can also [check here](https://raynardj.github.io/p3self/docs/gowalla_preprocess) for a use case on gowalla dataset
 
