@@ -74,8 +74,6 @@ class Trainer:
         self.track=dict()
         self.fields=fields
         self.is_log=is_log
-
-        self.epoch_now=0
         
     def train(self,epochs,name=None,log_addr=None):
         """
@@ -89,7 +87,6 @@ class Trainer:
         if log_addr[-1]!="/": log_addr += "/"
             
         for epoch in range(epochs):
-            self.epoch_now=epoch
             self.track[epoch]=list()
             self.run(epoch)
         if self.is_log:
