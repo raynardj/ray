@@ -20,11 +20,17 @@ class kmeans_core:
 
         self.dim = data_array.shape[-1]
         self.data_len = data_array.shape[0]
+        
         self.cent = Variable(Tensor(data_array[np.random.choice(range(self.data_len), k)]))
+        
+        if CUDA:
+            self.cent = self.cent.cuda()
+            
         self.epochs = epochs
         self.batch_size = batch_size
         self.dataloader = DataLoader(self.dataset, batch_size=batch_size, shuffle=True)
         self.iters = len(self.dataloader)
+        
 
     def get_ds(self):
         return TensorDataset(Tensor(self.data_array))
@@ -36,6 +42,8 @@ class kmeans_core:
             start = self.cent.clone()
             for i in t:
                 dt = next(gen)[0]
+                if CUDA:
+                    dt = dt.cuda()
                 self.step(dt)
                 t.set_description("🔥[epoch:%s\t iter:%s]🔥 \t🔥k:%s\t🔥distance:%.3f" % (e, i, self.k, self.distance))
 
@@ -47,6 +55,8 @@ class kmeans_core:
         t = trange(self.iters)
         for i in t:
             dt = next(gen)[0]
+            if CUDA:
+                    dt = dt.cuda()
             if i == 0:
                 self.idx = self.calc_idx(dt)
             else:
@@ -70,9 +80,16 @@ class kmeans_core:
         return idx
 
     def new_c(self, idx, dt):
-        z = Variable(torch.zeros(self.k, self.dim))
-        o = Variable(torch.zeros(self.k))
-        ct = o.index_add(0, idx, Variable(torch.ones(dt.size()[0])))
+        z = torch.zeros(self.k, self.dim)
+        o = torch.zeros(self.k)
+        ones = torch.ones(dt.size()[0])
+        
+        if CUDA:
+            z = z.cuda()
+            o = o.cuda()
+            ones = ones.cuda()
+            
+        ct = o.index_add(0, idx, ones)
 
         # slice to remove empety sum (no more such centroid)
         slice_ = (ct > 0)
