@@ -38,11 +38,11 @@ class kmeans_core:
                 dt, _ = next(gen)
                 dt = Variable(dt)
                 self.step(dt)
-                t.set_description("[epoch:%s\t iter:%s] \tk:%s\tdistance:%.3f" % (e, i, self.k, self.distance))
+                t.set_description("🔥[epoch:%s\t iter:%s]🔥 \t🔥k:%s\t🔥distance:%.3f" % (e, i, self.k, self.distance))
 
             if self.cent.size()[0] == start.size()[0]:
                 if self.cent.sum().data[0] == start.sum().data[0]:
-                    print("Centeroids is not shifting anymore")
+                    print("Centroids is not shifting anymore")
                     break
         gen = iter(self.dataloader)
         t = trange(self.iters)
@@ -76,7 +76,7 @@ class kmeans_core:
         o = Variable(torch.zeros(self.k))
         ct = o.index_add(0, idx, Variable(torch.ones(dt.size()[0])))
 
-        # slice to remove empety sum (no more such centeroid)
+        # slice to remove empety sum (no more such centroid)
         slice_ = (ct > 0)
 
         cent_sum = z.index_add(0, idx, dt)[slice_.view(-1, 1)].view(-1, self.dim)
@@ -93,8 +93,8 @@ class iou_km(kmeans_core):
         """
         calculation steps here
         dt is the data batch , size = (batch_size , dimension)
-        self.cent is the centeroid, size = (k,dim)
-        the return distance, size = (batch_size , k), from each point's distance to centeroids
+        self.cent is the centroid, size = (k,dim)
+        the return distance, size = (batch_size , k), from each point's distance to centroids
         """
         bs = dt.size()[0]
         box = dt.unsqueeze(1).repeat(1, self.k, 1)
