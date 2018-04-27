@@ -1,4 +1,4 @@
-# Python 3 self made program for deep learning
+# Hacks and Tools on machine learning
 
 ## matchbox.py
 

@@ -4,7 +4,9 @@ When you have a hammer, every problem looks like nail to you.
 
 When we have a torch, wo do try burning everything , even using it for kmeans.
 
-You can also [check here](https://raynardj.github.io/p3self/docs/gowalla_preprocess) for a use case on gowalla dataset
+You can also [check here](https://raynardj.github.io/p3self/docs/gowalla_preprocess) for a use case on gowalla dataset. You can see the time taken to run an entire epoch is down from 30+ minutes to 38 seconds using by batch technique, and the wall time is down to 3 seconds if we use a NVIDIA GTX 1070
+
+This hack can accelerate the calculation of kmeans in scale of x10 ~ x1000.
 
 ## Problem:
 Assume we have a large array A, will be clustered in a big centroid number: K
