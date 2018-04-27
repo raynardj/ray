@@ -5,62 +5,78 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader
 from tqdm import trange
 from torch import Tensor
+import math
 
 CUDA = torch.cuda.is_available()
 
-
 class kmeans_core:
-    def __init__(self, k, data_array, batch_size=1000, epochs=200):
+    def __init__(self, k, data_array, batch_size=8e5, epochs=200,all_cuda=True):
         """
         kmeans by batch
+        k: number of the starting centroids
+        data_array:numpy array of data
+        batch_size:batch size
+        epochs: max epoch iterations, if the centeroids not shifting any more, the calculation will cease before this max number
+        all_cuda: do you want to move the entire array to the cuda
+        
+        About data loader: We didn't use dataloader. The data loader will load data entry by entry with cpu multi processor, hence losing the power of fast gpu. Matter of fact, when I use the dataloader the 92.1% of the time consumption is caused by data loader
         """
         self.k = k
         self.data_array = data_array
-        self.dataset = self.get_ds()
-
+        self.tensor = Tensor(self.data_array,)
+        self.all_cuda = all_cuda
+        if all_cuda and CUDA:
+            self.tensor = self.tensor.cuda()
+        
         self.dim = data_array.shape[-1]
         self.data_len = data_array.shape[0]
         
-        self.cent = Variable(Tensor(data_array[np.random.choice(range(self.data_len), k)]))
+        self.cent = Tensor(data_array[np.random.choice(range(self.data_len), k)])
         
         if CUDA:
             self.cent = self.cent.cuda()
             
         self.epochs = epochs
-        self.batch_size = batch_size
-        self.dataloader = DataLoader(self.dataset, batch_size=batch_size, shuffle=True)
-        self.iters = len(self.dataloader)
+        self.batch_size = int(batch_size)
+        self.iters = math.ceil(self.data_array.shape[0]/self.batch_size)
+        self.index = 0
         
 
-    def get_ds(self):
-        return TensorDataset(Tensor(self.data_array))
+    def get_data(self,index):
+        return self.tensor[index:index+self.batch_size,...]
 
     def run(self):
         for e in range(self.epochs):
             t = trange(self.iters)
-            gen = iter(self.dataloader)
+
             start = self.cent.clone()
             for i in t:
-                dt = next(gen)[0]
-                if CUDA:
-                    dt = dt.cuda()
+                dt = self.get_data(self.index)
+                self.index += self.batch_size
+                
+                if CUDA and self.all_cuda==False:
+                    dt = dt.cuda()  
                 self.step(dt)
                 t.set_description("🔥[epoch:%s\t iter:%s]🔥 \t🔥k:%s\t🔥distance:%.3f" % (e, i, self.k, self.distance))
-
+            self.index=0
+            
             if self.cent.size()[0] == start.size()[0]:
                 if self.cent.sum().item() == start.sum().item():
                     print("Centroids is not shifting anymore")
                     break
-        gen = iter(self.dataloader)
+                    
         t = trange(self.iters)
+        
         for i in t:
-            dt = next(gen)[0]
-            if CUDA:
-                    dt = dt.cuda()
+            dt = self.get_data(self.index)
+            self.index += self.batch_size
+            if CUDA and self.all_cuda==False:
+                dt = dt.cuda()
             if i == 0:
                 self.idx = self.calc_idx(dt)
             else:
                 self.idx = torch.cat([self.idx, self.calc_idx(dt)], dim=-1)
+        self.index=0
         return self.idx
 
     def step(self, dt):
@@ -80,14 +96,14 @@ class kmeans_core:
         return idx
 
     def new_c(self, idx, dt):
-        z = torch.zeros(self.k, self.dim)
-        o = torch.zeros(self.k)
-        ones = torch.ones(dt.size()[0])
-        
         if CUDA:
-            z = z.cuda()
-            o = o.cuda()
-            ones = ones.cuda()
+            z = torch.cuda.FloatTensor(self.k, self.dim).fill_(0)
+            o = torch.cuda.FloatTensor(self.k).fill_(0)
+            ones = torch.cuda.FloatTensor(dt.size()[0]).fill_(1)
+        else:
+            z = torch.zeros(self.k, self.dim)
+            o = torch.zeros(self.k)
+            ones = torch.ones(dt.size()[0])
             
         ct = o.index_add(0, idx, ones)
 
