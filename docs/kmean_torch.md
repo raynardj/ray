@@ -4,14 +4,14 @@ A cuda accelerated kmeans by batch
 
 
 ## Problem:
-Assume we have a large array A, will be clustered in a big centeroid number: K
+Assume we have a large array A, will be clustered in a big centroid number: K
 
 ```python
 import numpy as np
 A = np.random.rand(1e6,4)
 K = 200
 ```
-As the calculation grow exponentially with the centeroids number.
+As the calculation grow exponentially with the centroids number.
 
 
 ## Solution:
@@ -47,8 +47,9 @@ class iou_km(kmeans_core):
         """
         calculation steps here
         dt is the data batch , size = (batch_size , dimension)
-        self.cent is the centeroid, size = (k,dim)
-        the return distance, size = (batch_size , k), from each point's distance to centeroids
+        self.cent is the cent
+        centroid, size = (k,dim)
+        the return distance, size = (batch_size , k), from each point's distance to centroids
         """
         bs = dt.size()[0]
         box = dt.unsqueeze(1).repeat(1, self.k, 1)
