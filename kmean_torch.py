@@ -27,7 +27,7 @@ class kmeans_core:
         self.iters = len(self.dataloader)
 
     def get_ds(self):
-        return TensorDataset(data_tensor=Tensor(self.data_array), target_tensor=torch.zeros(self.data_array.shape[0]))
+        return TensorDataset(Tensor(self.data_array))
 
     def run(self):
         for e in range(self.epochs):
@@ -35,20 +35,18 @@ class kmeans_core:
             gen = iter(self.dataloader)
             start = self.cent.clone()
             for i in t:
-                dt, _ = next(gen)
-                dt = Variable(dt)
+                dt = next(gen)[0]
                 self.step(dt)
                 t.set_description("🔥[epoch:%s\t iter:%s]🔥 \t🔥k:%s\t🔥distance:%.3f" % (e, i, self.k, self.distance))
 
             if self.cent.size()[0] == start.size()[0]:
-                if self.cent.sum().data[0] == start.sum().data[0]:
+                if self.cent.sum().item() == start.sum().item():
                     print("Centroids is not shifting anymore")
                     break
         gen = iter(self.dataloader)
         t = trange(self.iters)
         for i in t:
-            dt, _ = next(gen)
-            dt = Variable(dt)
+            dt = next(gen)[0]
             if i == 0:
                 self.idx = self.calc_idx(dt)
             else:
@@ -67,7 +65,7 @@ class kmeans_core:
 
     def calc_idx(self, dt):
         distance = self.calc_distance(dt)
-        self.distance = distance.mean().data[0]
+        self.distance = distance.mean().item()
         val, idx = torch.min(distance, dim=-1)
         return idx
 
@@ -79,7 +77,7 @@ class kmeans_core:
         # slice to remove empety sum (no more such centroid)
         slice_ = (ct > 0)
 
-        cent_sum = z.index_add(0, idx, dt)[slice_.view(-1, 1)].view(-1, self.dim)
+        cent_sum = z.index_add(0, idx, dt)[slice_.view(-1, 1).repeat(1,self.dim)].view(-1, self.dim)
         ct = ct[slice_].view(-1, 1)
 
         self.cent = cent_sum / ct
