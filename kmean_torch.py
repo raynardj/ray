@@ -1,8 +1,5 @@
 import torch
-from torch.autograd import Variable
 import numpy as np
-from torch.utils.data.dataset import TensorDataset
-from torch.utils.data import DataLoader
 from tqdm import trange
 from torch import Tensor
 import math
