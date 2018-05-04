@@ -1,5 +1,7 @@
 # KMeans on batch, accelerated on Pytorch
 
+![Kmeans Accelerated](https://raynardj.github.io/p3self/img/accelerate.jpg)
+
 When you have a hammer, every problem looks like nail to you.
 
 When we have a torch, wo do try burning everything , even using it for kmeans.
