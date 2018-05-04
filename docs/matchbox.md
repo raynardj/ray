@@ -3,7 +3,7 @@
 ### A tool box for pytorch, 
 ### Trainer Wraper
 
-![matchbox](https://github.com/raynardj/p3self/blob/master/img/Match.jpg)
+![matchbox](https://raynardj.github.io/p3self/img/Match.jpg)
 
 ```python
 from p3self.matchbox import Trainer
