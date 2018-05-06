@@ -175,20 +175,6 @@ class Trainer:
         if val_filepath:
             self.todataframe(self.val_track).to_csv(val_filepath,index=False)
 
-class UnitNormClipper(object):
-
-    def __init__(self, frequency=5,limit=1e-3):
-        """
-        clip weights to [-limit,limit]
-        clipper = UnitNormClipper()
-        during iteration:g
-        model.apply(clipper)
-        """
-        self.frequency = frequency
-        self.limit=limit
-
-    def __call__(self, module):
-        # filter the variables to get the ones you want
-        if hasattr(module, 'weight'):
-            w = module.weight.data
-            w = torch.clamp(w, -self.limit, self.limit)
+def clip_weight(model,clamp_lower=-1e-2,clamp_upper=1e-2):
+    for p in model.parameters():
+        p.data.clamp_(clamp_lower, clamp_upper)
