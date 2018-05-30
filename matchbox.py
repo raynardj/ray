@@ -176,10 +176,21 @@ def clip_weight(model,clamp_lower=-1e-2,clamp_upper=1e-2):
 
 
 def argmax(x):
+    """
+    Arg max of a torch tensor (2 dimensional, dim=1)
+    :param x:  torch tensor
+    :return: index the of the max
+    """
     return torch.max(x, dim=1)[1]
 
 
 def accuracy(y_pred, y_true):
+    """
+
+    :param y_pred: predition of y (will be argmaxed)
+    :param y_true: true label of y (index)
+    :return:
+    """
     return (argmax(y_pred) == y_true).float().mean()
 
 
