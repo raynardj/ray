@@ -60,7 +60,7 @@ class Trainer:
         """
         self.batch_size=batch_size
         self.dataset = dataset
-        self.train_data = DataLoader(self.dataset,batch_size=self.batch_size)
+        self.train_data = DataLoader(self.dataset,batch_size=self.batch_size, shuffle=True)
         self.train_len=len(self.train_data)
         self.val_dataset=val_dataset
         self.print_on = print_on
@@ -92,17 +92,12 @@ class Trainer:
         if self.is_log:
             os.system("mkdir -p %s"%(log_addr))
             trn_track = pd.DataFrame(list(v for v in self.track.items()))
-            trn_track = trn_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S"))
+            trn_track = trn_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv")
             
             if self.val_dataset:
                 
                 val_track = pd.DataFrame(list(v for v in self.val_track.items()))
-                val_track = val_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S"))
-                
-                return trn_track,val_track
-            
-            else:
-                return trn_track
+                val_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv")
     
     def run(self,epoch):
         t=trange(self.train_len)
@@ -178,8 +173,27 @@ class Trainer:
 def clip_weight(model,clamp_lower=-1e-2,clamp_upper=1e-2):
     for p in model.parameters():
         p.data.clamp_(clamp_lower, clamp_upper)
-        
-def save_model(model,path):
+
+def argmax(x):
+    """
+    Arg max of a torch tensor (2 dimensional, dim=1)
+    :param x:  torch tensor
+    :return: index the of the max
+    """
+    return torch.max(x, dim=1)[1]
+
+
+def accuracy(y_pred, y_true):
+    """
+
+    :param y_pred: predition of y (will be argmaxed)
+    :param y_true: true label of y (index)
+    :return:
+    """
+    return (argmax(y_pred) == y_true).float().mean()
+
+
+def save_model(model, path):
     """
     model:pytorch model
     path:save to path, end with pkl
@@ -188,3 +202,28 @@ def save_model(model,path):
     
 def load_model(model,path):
     model.load_state_dict(torch.load(path))
+
+def supermean(x):
+    if x.size()[0]==0:
+        rt = torch.FloatTensor([1e-6])
+        if CUDA:
+            rt.cuda()
+    else:
+        rt = x.mean()
+    return rt
+
+def f1_score(y_pred,y_true):
+    """
+    f1 score for multi label classification problem
+    y_pred will be the same shape with y_true
+    y_true will prefer long tensor format
+    """
+    y_pred_tf = (F.sigmoid(y_pred)>.5)
+    guess_right = (y_pred_tf.float()==y_true).float()
+    
+    accuracy = supermean(guess_right)
+    recall = supermean(guess_right[y_true.byte()])
+    precision = supermean(guess_right[y_pred_tf.byte()])
+    
+    f1  = 2*(recall*precision)/(recall+precision)
+    return accuracy,recall,precision,f1
