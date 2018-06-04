@@ -204,6 +204,7 @@ def load_model(model,path):
     model.load_state_dict(torch.load(path))
 
 def supermean(x):
+    """return mean, incase denomenator is 0 return 1e-6 (a very small number)"""
     if x.size()[0]==0:
         rt = torch.FloatTensor([1e-6])
         if CUDA:
