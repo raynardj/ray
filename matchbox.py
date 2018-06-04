@@ -178,3 +178,13 @@ class Trainer:
 def clip_weight(model,clamp_lower=-1e-2,clamp_upper=1e-2):
     for p in model.parameters():
         p.data.clamp_(clamp_lower, clamp_upper)
+        
+def save_model(model,path):
+    """
+    model:pytorch model
+    path:save to path, end with pkl
+    """
+    torch.save(model.state_dict(), path)
+    
+def load_model(model,path):
+    model.load_state_dict(torch.load(path))
