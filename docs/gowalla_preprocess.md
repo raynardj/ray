@@ -30,7 +30,7 @@ Set k=200, put in the array, set batch size to 800,000
 
 
 ```python
-from p3self.kmean_torch import kmeans_core
+from ray.kmean_torch import kmeans_core
 
 km = kmeans_core(200,geo_array,batch_size=8e5)
 ```
@@ -74,7 +74,7 @@ km.run()
 
 
 ```python
-from p3self.kmean_torch import kmeans_core
+from ray.kmean_torch import kmeans_core
 ```
 
 For comparison, 1 epoch took 38 seconds to run on cpu
