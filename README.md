@@ -4,13 +4,13 @@
 
 A tool box for pytorch, A wrapper around trainer
 
-Full introduction [here](https://raynardj.github.io/p3self/docs/matchbox)
+Full introduction [here](https://raynardj.github.io/ray/docs/matchbox)
 
 ## kmean_torch.py
 
 The core class for cuda accelerated kmeans by batch
 
-Full introduction [here](https://raynardj.github.io/p3self/docs/kmean_torch)
+Full introduction [here](https://raynardj.github.io/ray/docs/kmean_torch)
 
 ## lprint.py
 
