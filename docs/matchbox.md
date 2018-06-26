@@ -3,10 +3,10 @@
 ### A tool box for pytorch, 
 ### Trainer Wraper
 
-![matchbox](https://raynardj.github.io/p3self/img/Match.jpg)
+![matchbox](https://raynardj.github.io/ray/img/Match.jpg)
 
 ```python
-from p3self.matchbox import Trainer
+from ray.matchbox import Trainer
 # train_set is a pytorch dateset class
 # if you don't set the arg: val_dataset, it won't run validation.
 trainer = Trainer(train_set,batch_size=8,print_on=20)
