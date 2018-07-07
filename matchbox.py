@@ -3,10 +3,11 @@
 
 import torch
 from torch import nn
-from torch.autograd import Variable
 from torch.nn import functional as F
 from tqdm import trange
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+import math
 from datetime import datetime
 import os
 import pandas as pd
@@ -228,3 +229,26 @@ def f1_score(y_pred,y_true):
     
     f1  = 2*(recall*precision)/(recall+precision)
     return accuracy,recall,precision,f1
+
+class Arr_Dataset(Dataset):
+    def __init__(self, *args, bs):
+        """
+        arr_dataset, a dataset for slicing numpy array,instead of single indexing and collate
+        Please use batch_size=1 for dataloader, and define the batch size here
+
+        eg.
+        ```
+        ds = arr_ds(arr_1,arr_2,arr_3,bs = 512)
+        ```
+        """
+        super(Arr_Dataset, self).__init__()
+        self.arrs = args
+        self.bs = bs
+
+    def __len__(self):
+        return math.ceil(len(self.arrs[0]) / self.bs)
+
+    def __getitem__(self, idx):
+        start = idx * self.bs
+        end = (idx + 1) * self.bs
+        return tuple(self.arrs[i][start:end] for i in range(len(self.arrs)))
