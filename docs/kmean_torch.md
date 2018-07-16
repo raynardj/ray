@@ -28,7 +28,7 @@ In this case we can use this pytorch to harvest the power of cuda GPU to acceler
 If you use sklearn's kmeans, you could have waited for hours
 
 ```python
-from p3self.kmean_torch import kmeans_core
+from ray.kmean_torch import kmeans_core
 km = kmeans_core(k=K,data_array=A,batch_size=3000,epochs=200)
 km.run()
 ```
