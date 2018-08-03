@@ -1,6 +1,13 @@
 from torch import nn
 import torch
 
+class Flatten(nn.Module):
+    def forward(self, input):
+        """
+        a pytorch version of Flatten layer
+        """
+        return input.view(input.size(0), -1)
+
 class add_coord(nn.Module):
     def __init__(self):
         super(add_coord,self).__init__()
