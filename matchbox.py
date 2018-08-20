@@ -12,6 +12,10 @@ from datetime import datetime
 import os
 import pandas as pd
 
+JUPYTER = True if "jupyter" in os.environ["_"] else False
+
+if JUPYTER:from tqdm import tqdm_notebook as tn
+
 def p_structure(md):
     """Print out the parameter structure"""
     for par in md.parameters():
@@ -101,7 +105,10 @@ class Trainer:
                 val_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv")
     
     def run(self,epoch):
-        t=trange(self.train_len)
+        if JUPYTER:
+            t=tn(range(self.train_len))
+        else:
+            t=trange(self.train_len)
         self.train_gen = iter(self.train_data)
         
         for i in t:
@@ -117,7 +124,10 @@ class Trainer:
             
             self.val_track[epoch]=list()
             self.val_gen = iter(self.val_data)
-            val_t = trange(self.val_len)
+            if JUPYTER:
+                val_t=tn(range(self.val_len))
+            else:
+                val_t=trange(self.val_len)
             
             for i in val_t:
                 ret = self.val_action(next(self.val_gen),epoch=epoch,ite=i)
@@ -134,10 +144,13 @@ class Trainer:
         del window_dict["iter"]
         
         desc = "⭐[ep_%s_i_%s]"%(epoch,i)
-        if self.fields!=None:
-            desc += "✨".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() if k in self.fields))
+        if JUPYTER:
+            t.set_postfix(window_dict)
         else:
-            desc += "✨".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() ))
+            if self.fields!=None:
+                desc += "✨".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() if k in self.fields))
+            else:
+                desc += "✨".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() ))
         t.set_description(desc)
         
     def update_descrition_val(self,epoch,i,t):
@@ -147,10 +160,13 @@ class Trainer:
         del window_dict["iter"]
         
         desc = "😎[val_ep_%s_i_%s]"%(epoch,i)
-        if self.fields!=None:
-            desc += "😂".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() if k in self.fields))
+        if JUPYTER:
+            t.set_postfix(window_dict)
         else:
-            desc += "😂".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items()))
+            if self.fields!=None:
+                desc += "😂".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() if k in self.fields))
+            else:
+                desc += "😂".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items()))
         t.set_description(desc)
             
     def todataframe(self,dict_):
@@ -229,6 +245,35 @@ def f1_score(y_pred,y_true):
     
     f1  = 2*(recall*precision)/(recall+precision)
     return accuracy,recall,precision,f1
+
+class DF_Dataset(Dataset):
+    def __init__(self, df,x_prepro,y_prepro, bs,shuffle=True):
+        """
+        arr_dataset, a dataset for slicing numpy array,instead of single indexing and collate
+        Please use batch_size=1 for dataloader, and define the batch size here
+
+        eg.
+        ```
+        ds = arr_ds(arr_1,arr_2,arr_3,bs = 512)
+        ```
+        """
+#         super(DF_Dataset, self).__init__()
+        
+        if shuffle: print("shuffling");df = df.sample(frac=1.).reset_index();print("shuffled") # shuffle the data here
+        
+        self.df = df
+        self.x_prepro = x_prepro
+        self.y_prepro = y_prepro
+        self.bs = bs
+
+    def __len__(self):
+        return math.ceil(len(self.df) / self.bs)
+
+    def __getitem__(self, idx):
+        start = idx * self.bs
+        end = (idx + 1) * self.bs
+#         print(type(self.x_prepro(self.df[start:end])),type(self.y_prepro(self.df[start:end])))
+        return self.x_prepro(self.df[start:end]),self.y_prepro(self.df[start:end])
 
 class Arr_Dataset(Dataset):
     def __init__(self, *args, bs):
