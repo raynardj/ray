@@ -65,14 +65,14 @@ class Trainer:
         """
         self.batch_size=batch_size
         self.dataset = dataset
-        self.train_data = DataLoader(self.dataset,batch_size=self.batch_size, shuffle=True)
+        self.train_data = DataLoader(self.dataset,batch_size=self.batch_size, shuffle = True)
         self.train_len=len(self.train_data)
         self.val_dataset=val_dataset
         self.print_on = print_on
         
         if self.val_dataset:
             self.val_dataset = val_dataset
-            self.val_data = DataLoader(self.val_dataset,batch_size=self.batch_size)
+            self.val_data = DataLoader(self.val_dataset,batch_size=self.batch_size ,shuffle = True)
             self.val_len=len(self.val_data)
             self.val_track=dict()
             
@@ -173,9 +173,9 @@ class Trainer:
         """return a dataframe on the train log dictionary"""
         tracks=[]
         for i in range(len(dict_)):
-            tracks+=dict_[i]
+            tracks += dict_[i]
 
-        return pd.DataFrame(tracks)
+        return pd.DataFrame(to)
     
     def save_track(self,filepath,val_filepath=None):
         """
