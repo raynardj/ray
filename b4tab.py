@@ -81,7 +81,7 @@ class categorical(col_core):
         return pandas_s.apply(self.trans2idx)
     
     def prepro(self,pandas_s):
-        return self.eye[self.prepro_idx(pandas_s).values]
+        return self.eye[self.prepro_idx(pandas_s).values.astype(int)]
     
 class categorical_idx(col_core):
     def __init__(self,col_name,save_dir = ".matchbox/fields"):
