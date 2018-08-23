@@ -153,7 +153,7 @@ class minmax(col_core):
         self.make_meta()
         
     def prepro(self,data,expand=True):
-        x = (np.clip(data.values.astype(float),self.min_,self.max_)-self.min_)/self.range
+        x = (np.clip(data.values.astype(np.float64),self.min_,self.max_)-self.min_)/self.range
         if expand:x = np.expand_dims(x,-1)
         return x
         
