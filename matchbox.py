@@ -11,8 +11,10 @@ import math
 from datetime import datetime
 import os
 import pandas as pd
+from functools import  reduce
 
-JUPYTER = True if "jupyter" in os.environ["_"] else False
+# JUPYTER = True if "jupyter" in os.environ["_"] else False
+JUPYTER = False
 
 if JUPYTER:from tqdm import tqdm_notebook as tn
 
@@ -28,7 +30,7 @@ def p_count(md):
     return allp
 
 class Trainer:
-    def __init__(self,dataset,val_dataset = None,batch_size=16,print_on=20,fields=None,is_log=True):
+    def __init__(self,dataset,val_dataset = None,batch_size=16,print_on=20,fields=None,is_log=True, shuffle = True):
         """
         Pytorch trainer
         fields: the fields you choose to print out
@@ -65,14 +67,14 @@ class Trainer:
         """
         self.batch_size=batch_size
         self.dataset = dataset
-        self.train_data = DataLoader(self.dataset,batch_size=self.batch_size, shuffle = True)
+        self.train_data = DataLoader(self.dataset,batch_size=self.batch_size, shuffle = shuffle)
         self.train_len=len(self.train_data)
         self.val_dataset=val_dataset
         self.print_on = print_on
         
         if self.val_dataset:
             self.val_dataset = val_dataset
-            self.val_data = DataLoader(self.val_dataset,batch_size=self.batch_size ,shuffle = True)
+            self.val_data = DataLoader(self.val_dataset,batch_size=self.batch_size ,shuffle = shuffle)
             self.val_len=len(self.val_data)
             self.val_track=dict()
             
@@ -96,13 +98,13 @@ class Trainer:
             self.run(epoch)
         if self.is_log:
             os.system("mkdir -p %s"%(log_addr))
-            trn_track = pd.DataFrame(list(v for v in self.track.items()))
-            trn_track = trn_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv")
+            trn_track = pd.DataFrame(reduce((lambda x,y:x+y),list(self.track.values())))
+            trn_track = trn_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv",index=False)
             
             if self.val_dataset:
                 
-                val_track = pd.DataFrame(list(v for v in self.val_track.items()))
-                val_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv")
+                val_track = pd.DataFrame(reduce((lambda x,y:x+y),list(self.val_track.values())))
+                val_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv",index=False)
     
     def run(self,epoch):
         if JUPYTER:
