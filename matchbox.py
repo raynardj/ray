@@ -96,7 +96,7 @@ class Trainer:
         if name==None:
             name="torch_train_"+datetime.now().strftime("%y%m%d_%H%M%S")
         if log_addr==None:
-            log_addr=name
+            log_addr=".log_%s"%(name)
             
         if log_addr[-1]!="/": log_addr += "/"
             
