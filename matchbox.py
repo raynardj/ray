@@ -30,7 +30,9 @@ def p_count(md):
     return allp
 
 class Trainer:
-    def __init__(self,dataset,val_dataset = None,batch_size=16,print_on=20,fields=None,is_log=True, shuffle = True):
+    def __init__(self,dataset,val_dataset = None,batch_size=16,
+                 print_on=20,fields=None,is_log=True, shuffle = True, 
+                 conn = None, modelName = "model", tryName = "try"):
         """
         Pytorch trainer
         fields: the fields you choose to print out
@@ -64,9 +66,14 @@ class Trainer:
         trainer.train(epochs = 30)
         
         same work for validation:trainer.val_action = val_action
+        
+        conn: a sql table connection, (sqlalchemy). if assigned value, save the record in the designated sql database;
         """
         self.batch_size=batch_size
         self.dataset = dataset
+        self.conn = conn
+        self.modelName = modelName
+        self.tryName = tryName
         self.train_data = DataLoader(self.dataset,batch_size=self.batch_size, shuffle = shuffle)
         self.train_len=len(self.train_data)
         self.val_dataset=val_dataset
@@ -140,8 +147,13 @@ class Trainer:
                 self.update_descrition_val(epoch,i,val_t)
                     
     def update_descrition(self,epoch,i,t):
-        window_dict = dict(pd.DataFrame(self.track[epoch][max(i-self.print_on,0):i]).mean())
-        
+        window_df = pd.DataFrame(self.track[epoch][max(i-self.print_on,0):i])
+
+        if self.conn: # if saving to a SQL database
+            window_df["split_"] = "train"
+            window_df["tryName"] = self.tryName+"_train"
+            window_df.to_sql("track_%s"%(self.modelName),con = self.conn, if_exists = "append", index = False)
+        window_dict = dict(window_df.mean())
         del window_dict["epoch"]
         del window_dict["iter"]
         
@@ -154,8 +166,14 @@ class Trainer:
             else:
                 desc += "✨".join(list("\t%s\t%.3f"%(k,v) for k,v in window_dict.items() ))
         t.set_description(desc)
+
         
     def update_descrition_val(self,epoch,i,t):
+        if self.conn: # if saving to a SQL database
+            window_df = pd.DataFrame(self.val_track[epoch][max(i-self.print_on,0):i])
+            window_df["split_"] = "valid"
+            window_df["tryName"] = self.tryName+"_valid"
+            window_df.to_sql("track_%s"%(self.modelName),con = self.conn, if_exists = "append", index = False)
         window_dict = dict(pd.DataFrame(self.val_track[epoch]).mean())
         #print(pd.DataFrame(self.val_track[epoch]))
         del window_dict["epoch"]
