@@ -1,6 +1,13 @@
 from torch import nn
 import torch
 
+class Flatten(nn.Module):
+    def forward(self, input):
+        """
+        a pytorch version of Flatten layer
+        """
+        return input.view(input.size(0), -1)
+
 class add_coord(nn.Module):
     def __init__(self):
         super(add_coord,self).__init__()
@@ -27,3 +34,28 @@ class Coord2d(nn.Module):
         x = self.add_coord(x)
         x = self.conv(x)
         return x
+    
+class attn_lstm(nn.Module):
+    def __init__(self,seq_len,vocab_size,hidden_size,num_layers = 1):
+        """
+        attention layer for sentiment analysis
+        seq_len: sequence length
+        vocab_size: vocabulary size
+        hidden_size: size for embedding, hidden state, cell state
+        output: (batch_size, hidden_size)
+        """
+        super(attn_lstm,self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.emb = nn.Embedding(vocab_size,hidden_size,)
+        self.lstm = nn.LSTM(hidden_size,hidden_size,batch_first = True,num_layers = num_layers)
+        self.attn = nn.Linear(hidden_size,1,bias = False)
+        
+    def forward(self,x_input):
+        embedded = self.emb(x_input)
+        attn_mask = self.attn(embedded)
+        output,(h,c) = self.lstm(embedded)
+        output = output.permute(0,2,1)
+        output_hidden = output.bmm(attn_mask).squeeze(-1)
+        return output_hidden, attn_mask
+        

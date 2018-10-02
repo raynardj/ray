@@ -81,7 +81,7 @@ class categorical(col_core):
         return pandas_s.apply(self.trans2idx)
     
     def prepro(self,pandas_s):
-        return self.eye[self.prepro_idx(pandas_s).values]
+        return self.eye[self.prepro_idx(pandas_s).values.astype(int)]
     
 class categorical_idx(col_core):
     def __init__(self,col_name,save_dir = ".matchbox/fields"):
@@ -153,7 +153,7 @@ class minmax(col_core):
         self.make_meta()
         
     def prepro(self,data,expand=True):
-        x = (np.clip(data.values,self.min_,self.max_)-self.min_)/self.range
+        x = (np.clip(data.values.astype(np.float64),self.min_,self.max_)-self.min_)/self.range
         if expand:x = np.expand_dims(x,-1)
         return x
         
@@ -225,3 +225,50 @@ class tabulate(col_core):
             else:
                 data_list.append(col.prepro(data[k]))
         return np.concatenate(data_list,axis = 1)
+
+class mapper:
+    def __init__(self,conf_path, original = None, old_default = None, new_default = None):
+        """
+        Handling mapping mechanism, all index mapping should be saved as config file
+        [kwargs]
+        conf_path: path of the configuration file, end with npy
+        original: a list, will remove the duplicates
+        old_default: defualt original value if the interpretaion failed
+        new_default: defualt new value if the interpretaion failed
+        
+        user_map = mapper("conf/user_map.npy", user_Id_List )
+        user_map.o2n will be the dictionary for original index to the new index
+        user_map.n2o will be the dictionary for new index to the original index
+        
+        user_map = mappper("conf/user_map.npy") to load the conf file
+        """
+        self.conf_path = conf_path
+        self.old_default = old_default
+        self.new_default = new_default
+        if original:
+            self.original = list(set(original))
+            self.mapping()
+        else:
+            self.load_map()
+            
+    def mapping(self):
+        self.n2o = dict((k,v) for k,v in enumerate(self.original))
+        self.o2n = dict((v,k) for k,v in enumerate(self.original))
+        np.save(self.conf_path,{"n2o":self.n2o,"o2n":self.o2n})
+        
+    def load_map(self):
+        dicts = np.load(self.conf_path).tolist()
+        self.n2o = dicts["n2o"]
+        self.o2n = dicts["o2n"]
+        
+    def spit_new(self,o_idx):
+        try:
+            return self.o2n[o_idx]
+        except:
+            return self.new_default
+    
+    def spit_old(self,n_idx):
+        try:
+            return self.n2o[n_idx]
+        except:
+            return self.old_default
