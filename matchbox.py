@@ -126,7 +126,9 @@ class Trainer:
         for i in t:
             
             ret = self.action(next(self.train_gen),epoch=epoch,ite=i)
-            ret.update({"epoch":epoch,"iter":i,"time":self.get_time()})
+            ret.update({"epoch":epoch,
+                        "iter":i,
+                        "ts":self.get_time()})
             self.track[epoch].append(ret)
             
             if i%self.print_on==self.print_on-1:
@@ -143,7 +145,9 @@ class Trainer:
             
             for i in val_t:
                 ret = self.val_action(next(self.val_gen),epoch=epoch,ite=i)
-                ret.update({"epoch":epoch,"iter":i,"time":self.get_time()})
+                ret.update({"epoch":epoch,
+                            "iter":i,
+                            "ts":self.get_time()})
                 self.val_track[epoch].append(ret)
                 
                 #print(self.val_track)
@@ -159,7 +163,6 @@ class Trainer:
         window_dict = dict(window_df.mean())
         del window_dict["epoch"]
         del window_dict["iter"]
-        del window_dict["time"]
         
         desc = "⭐[ep_%s_i_%s]"%(epoch,i)
         if JUPYTER:
@@ -182,7 +185,6 @@ class Trainer:
         #print(pd.DataFrame(self.val_track[epoch]))
         del window_dict["epoch"]
         del window_dict["iter"]
-        del window_dict["time"]
         
         desc = "😎[val_ep_%s_i_%s]"%(epoch,i)
         if JUPYTER:
