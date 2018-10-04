@@ -109,12 +109,12 @@ class Trainer:
         if self.is_log:
             os.system("mkdir -p %s"%(log_addr))
             trn_track = pd.DataFrame(reduce((lambda x,y:x+y),list(self.track.values())))
-            trn_track = trn_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv",index=False)
+            trn_track = trn_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y_%m_%d__%H_%M_%S")+".csv",index=False)
             
             if self.val_dataset:
                 
                 val_track = pd.DataFrame(reduce((lambda x,y:x+y),list(self.val_track.values())))
-                val_track.to_csv(log_addr+"trn_"+datetime.now().strftime("%y%m%d_%H%M%S")+".csv",index=False)
+                val_track.to_csv(log_addr+"val_"+datetime.now().strftime("%y_%m_%d__%H_%M_%S")+".csv",index=False)
     
     def run(self,epoch):
         if JUPYTER:
