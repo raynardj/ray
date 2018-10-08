@@ -231,6 +231,7 @@ class mapper:
         """
         Handling mapping mechanism, all index mapping should be saved as config file
         [kwargs]
+        
         conf_path: path of the configuration file, end with npy
         original: a list, will remove the duplicates
         old_default: defualt original value if the interpretaion failed
@@ -242,7 +243,7 @@ class mapper:
         
         user_map = mappper("conf/user_map.npy") to load the conf file
         """
-        self.conf_path = conf_path
+        self.conf_path = conf_path # config file path
         self.old_default = old_default
         self.new_default = new_default
         if original:
