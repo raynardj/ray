@@ -227,7 +227,7 @@ class tabulate(col_core):
         return np.concatenate(data_list,axis = 1)
 
 class mapper:
-    def __init__(self,conf_path, original = None, old_default = None, new_default = None):
+    def __init__(self,conf_path, original = None, old_default = None, new_default = None, rank_size=None):
         """
         Handling mapping mechanism, all index mapping should be saved as config file
         [kwargs]
@@ -246,6 +246,7 @@ class mapper:
         self.conf_path = conf_path # config file path
         self.old_default = old_default
         self.new_default = new_default
+        self.rank_size = rank_size
         if original:
             self.original = list(set(original))
             self.mapping()
@@ -255,12 +256,19 @@ class mapper:
     def mapping(self):
         self.n2o = dict((k,v) for k,v in enumerate(self.original))
         self.o2n = dict((v,k) for k,v in enumerate(self.original))
-        np.save(self.conf_path,{"n2o":self.n2o,"o2n":self.o2n})
+        conf_dict = {"n2o":self.n2o,"o2n":self.o2n}
+        if self.rank_size:
+            chunk_size = int(len(self.original)/self.rank_size)
+            last_size = len(self.original)-(self.rank_size-1)*chunk_size
+            conf_dict.update({"rank_len":[chunk_size]*(self.rank_size-1)+[last_size]})
+        np.save(self.conf_path,conf_dict)
         
     def load_map(self):
         dicts = np.load(self.conf_path).tolist()
         self.n2o = dicts["n2o"]
         self.o2n = dicts["o2n"]
+        if "rank_len" in dicts:
+            self.rank_len = dicts["rank_len"]
         
     def spit_new(self,o_idx):
         try:
