@@ -261,8 +261,8 @@ class mapper:
             chunk_size = int(len(self.original)/self.rank_size)
             last_size = len(self.original)-(self.rank_size-1)*chunk_size
             conf_dict.update({"rank_len":[chunk_size]*(self.rank_size-1)+[last_size]})
-            conf_dict.update({"rank_o2n":list(dict(enumerate(self.original[chunk_size*i:chunk_size*i+conf_dict["rank_len"][i]])) for i in range(self.rank_size))})
-            conf_dict.update({"rank_n2o":list(dict((v,k) for k,v in i.items()) for i in conf_dict["rank_o2n"])})
+            conf_dict.update({"rank_n2o":list(dict(enumerate(self.original[chunk_size*i:chunk_size*i+conf_dict["rank_len"][i]])) for i in range(self.rank_size))})
+            conf_dict.update({"rank_o2n":list(dict((v,k) for k,v in i.items()) for i in conf_dict["rank_n2o"])})
         np.save(self.conf_path,conf_dict)
         
     def load_map(self):
