@@ -75,7 +75,7 @@ class AttLSTM(nn.Module):
         mask = self.mask_act(self.mask_maker(x).squeeze(-1)).unsqueeze(1) # mask shape (bs,1,seq_leng)
         output, (h_n,c_n) = self.lstm(x)
         output = mask.bmm(output).squeeze(1) # output shape (bs, hidden_size)
-        return output, (h_n, c_n)
+        return output, (h_n, c_n), mask.squeeze(1)
 # class attn_lstm(nn.Module):
 #     def __init__(self,seq_len,vocab_size,hidden_size,num_layers = 1):
 #         """
