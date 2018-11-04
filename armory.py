@@ -3,9 +3,6 @@ import os
 from glob import glob
 from PIL import Image
 from multiprocessing import Pool
-from keras.layers import Dense, Dropout, Conv2D, LSTM, Flatten, Lambda, Layer, MaxPool2D, GlobalAveragePooling2D, BatchNormalization
-import tensorflow as tf
-import keras.backend as K
 
 def preproc(img, rgb_mean=[123.68, 116.779, 103.939]):
     """
@@ -163,6 +160,21 @@ def folder_split(folder_dir, percent=.7):
                 cat_div_list[cate_][tt])
             map(lambda pair: os.system("cp %s %s" % (pair[0], pair[1])), cat_div_list[cate_][tt])
     return cat_div_list
+
+def mem(v):
+    """
+    Get the variable size
+    v: the variable
+    """
+    s = getsizeof(v)
+    if s< 1e3:
+        return "%s B"%(s)
+    elif s< 1e6: 
+        return "%.2f KB"%(s/1e3)
+    elif s< 1e9: 
+        return "%.2f MB"%(s/1e6)
+    else: 
+        return "%.2f GB"%(s/1e9)
 
 def one_hot(array,num_classes=None):
     """
