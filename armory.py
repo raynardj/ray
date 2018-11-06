@@ -3,6 +3,7 @@ import os
 from glob import glob
 from PIL import Image
 from multiprocessing import Pool
+from os import getsizeof
 
 def preproc(img, rgb_mean=[123.68, 116.779, 103.939]):
     """
