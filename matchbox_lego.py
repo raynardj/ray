@@ -68,6 +68,8 @@ class AttLSTM(nn.Module):
             self.mask_act = nn.Sigmoid()
         elif mask_activation == "relu":
             self.mask_act = nn.ReLU()
+        elif mask_activation == "passon":
+            self.mask_act = passon()
         else:
             print("Activation type:%s not found, should be one of the following:\nsoftmax\nsigmoid\nrelu"%(mask_activation))
 
@@ -76,6 +78,18 @@ class AttLSTM(nn.Module):
         output, (h_n,c_n) = self.lstm(x)
         output = mask.bmm(output).squeeze(1) # output shape (bs, hidden_size)
         return output, (h_n, c_n), mask.squeeze(1)
+    
+class passon(nn.Module):
+    def __init__(self):
+        """
+        forward calculation pass on the x
+        and do nothing else
+        """
+        super(passon,self).__init__()
+        
+    def forward(self,x):
+        return x
+    
 # class attn_lstm(nn.Module):
 #     def __init__(self,seq_len,vocab_size,hidden_size,num_layers = 1):
 #         """
