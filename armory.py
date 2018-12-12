@@ -4,6 +4,7 @@ from glob import glob
 from PIL import Image
 from multiprocessing import Pool
 from sys import getsizeof
+import json
 
 def preproc(img, rgb_mean=[123.68, 116.779, 103.939]):
     """
@@ -189,3 +190,20 @@ def one_hot(array,num_classes=None):
         num_classes=array.max()+1
     eye=np.eye(num_classes)
     return eye[array]
+
+def save_mlconf(conf_module):
+    """
+    saving configuration in 1 python file, eg abc/conffile.py
+    from abc import conffile
+    save_mlconf(conffile) will save the confs to a json file
+    hence we can have versioned configuration
+    * you have to contain `CONF_PATH` variable, a valid path for json file
+    """
+    confdict =  dict((v,eval(v)) for v in dir(conf_module) if v[0]!="_")
+    print(confdict)
+    json.dump(confdict,open(confdict["CONF_PATH"],mode="w"))
+    print("saved to %s"%(confdict["CONF_PATH"]))
+    return confdict
+
+def read_mlconf(conf_path):
+    return json.load(open(conf_path))
