@@ -6,6 +6,5 @@ setup(
     version="0.2.0",
     author_email="raynard@rasenn.com",
     description="Ray's tool for machine learning",
-    package_dir={'matchbox': 'matchbox'},
-    packages=['matchbox'],
+    packages=['matchbox','lprint','matchbox_lego','armory'],
 )
