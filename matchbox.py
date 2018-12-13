@@ -419,7 +419,7 @@ class Seq_Dataset(Dataset):
         self.process_funcs.append(self.totorch)
     
     def process_batch(self,batch):
-        return pad_sequence(np.vectorize(self.seq2idx,otypes=[list])(batch),batch_first = True)
+        return nn.utils.rnn.pad_sequence(np.vectorize(self.seq2idx,otypes=[list])(batch),batch_first = True)
     
     def seq2idx(self,x):
         for f in self.process_funcs: x = f(self,x)
