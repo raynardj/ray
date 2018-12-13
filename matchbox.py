@@ -12,6 +12,8 @@ from datetime import datetime
 import os
 import pandas as pd
 from functools import  reduce
+import math
+from collections import Counter
 
 # JUPYTER = True if "jupyter" in os.environ["_"] else False
 JUPYTER = False
@@ -274,23 +276,25 @@ def f1_score(y_pred,y_true):
     return accuracy,recall,precision,f1
 
 class DF_Dataset(Dataset):
-    def __init__(self, df,x_prepro,y_prepro, bs,shuffle=True):
+    def __init__(self,df, bs,prepro=lambda x:x.values,shuffle=False):
         """
-        arr_dataset, a dataset for slicing numpy array,instead of single indexing and collate
+        df_dataset, a dataset for slicing pandas dataframe,instead of single indexing and collate
         Please use batch_size=1 for dataloader, and define the batch size here
 
         eg.
         ```
-        ds = arr_ds(arr_1,arr_2,arr_3,bs = 512)
+        ds = DF_Dataset(data_df,bs=1024)
         ```
         """
 #         super(DF_Dataset, self).__init__()
         
-        if shuffle: print("shuffling");df = df.sample(frac=1.).reset_index();print("shuffled") # shuffle the data here
+        if shuffle: 
+            print("shuffling")
+            df = df.sample(frac=1.).reset_index().drop("index",axis=1)
+            print("shuffled") # shuffle the data here
         
         self.df = df
-        self.x_prepro = x_prepro
-        self.y_prepro = y_prepro
+        self.prepro = prepro
         self.bs = bs
 
     def __len__(self):
@@ -300,7 +304,7 @@ class DF_Dataset(Dataset):
         start = idx * self.bs
         end = (idx + 1) * self.bs
 #         print(type(self.x_prepro(self.df[start:end])),type(self.y_prepro(self.df[start:end])))
-        return self.x_prepro(self.df[start:end]),self.y_prepro(self.df[start:end])
+        return self.prepro(self.df[start:end])
 
 class Arr_Dataset(Dataset):
     def __init__(self, *args, bs):
@@ -310,7 +314,7 @@ class Arr_Dataset(Dataset):
 
         eg.
         ```
-        ds = arr_ds(arr_1,arr_2,arr_3,bs = 512)
+        ds = Arr_Dataset(arr_1,arr_2,arr_3,bs = 512)
         ```
         """
         super(Arr_Dataset, self).__init__()
@@ -324,3 +328,152 @@ class Arr_Dataset(Dataset):
         start = idx * self.bs
         end = (idx + 1) * self.bs
         return tuple(self.arrs[i][start:end] for i in range(len(self.arrs)))
+    
+class Seq_Dataset(Dataset):
+    """
+    a mechanism for reading sequence data, the preparation stage of nlp learning
+    """
+    def __init__(self,
+                 seqname,seq,seq_len=None,vocab_path=None,
+                 bs=16,vocab_size=10000,build_vocab=False,sep_tok = "<tok>",discard_side="right",element_type="int"):
+        '''
+        seq: enumerable sequence
+        vocab_path: path to vocabulary json file
+        threads:process number
+        element_type: "int" or "float"
+        '''
+        self.seqname = seqname
+        print(seqname,"sequence type:",type(seq))
+        self.process_funcs = []
+        self.seq = list(seq)
+        self.seq_len = seq_len
+        self.vocab_path = vocab_path
+        self.vocab_size = int(vocab_size)
+
+        self.bs = bs
+        self.N = len(self.seq)
+        self.BN = math.ceil(self.N/self.bs)
+        print(seqname,"sequence total_length type:",self.N)
+        
+        self.sep_tok = sep_tok if sep_tok!=None else ""
+        self.make_breaker()
+        self.discard_side = discard_side
+        if self.seq_len:
+            self.make_discard()
+        
+        if vocab_path:
+            if build_vocab==False and os.path.exists(vocab_path)==False:
+                print("vocab path not found, building vocab path anyway")
+                build_vocab=True
+            if build_vocab:
+                self.vocab = self.build_vocab(self.seq)
+                self.vocab.to_json(self.vocab_path)
+            else:
+                self.vocab = pd.read_json(self.vocab_path)
+            self.char2idx,self.idx2char = self.get_mapping(self.vocab)
+            self.make_translate()
+        self.element_type = element_type
+        self.make_totorch()
+
+    def __len__(self):
+        return self.BN
+    
+    def __getitem__(self,idx):
+        seq_crop = self.seq[idx:idx+self.bs]
+        return self.process_batch(seq_crop)
+    
+    def make_breaker(self):
+        if self.sep_tok!="":
+            def breaker(self,line):
+                return str(line).split(self.sep_tok)
+        else:
+            def breaker(self,line):
+                return list(str(line))
+        self.breaker=breaker
+        self.process_funcs.append(self.breaker)
+        
+    def make_discard(self):      
+        if self.discard_side=="right":
+            def discard(self,seqlist):
+                return seqlist[:self.seq_len]
+        if self.discard_side=="left":
+            def discard(self,seqlist):
+                return seqlist[-self.seq_len:]
+        self.discard = discard
+        self.process_funcs.append(self.discard)
+        
+    def make_translate(self):
+        def translate(self,x):
+            return np.vectorize(self.mapfunc)(x)
+        self.translate = translate
+        self.process_funcs.append(self.translate)
+        
+    def make_totorch(self):
+        if self.element_type == "int":
+            def totorch(self,seq):
+                return torch.LongTensor(np.array(seq).astype(np.int))
+        if self.element_type == "float":
+            def totorch(self,seq):
+                return torch.FloatTensor(np.array(seq).astype(np.float32))
+        self.totorch = totorch
+        self.process_funcs.append(self.totorch)
+    
+    def process_batch(self,batch):
+        return pad_sequence(np.vectorize(self.seq2idx,otypes=[list])(batch),batch_first = True)
+    
+    def seq2idx(self,x):
+        for f in self.process_funcs: x = f(self,x)
+        return x
+    
+    def get_mapping(self,vocab_df):
+        char2idx=dict(zip(vocab_df["token"],vocab_df["idx"]))
+        idx2char=dict(zip(vocab_df["idx"],vocab_df["token"]))
+        return char2idx,idx2char
+    
+    def mapfunc(self,x):
+        """
+        from token to index number
+        """
+        try:
+            return self.char2idx[x]
+        except:
+            return 1
+        
+    def get_token_count_dict(self,full_token):
+        """count the token to a list"""
+        return Counter(full_token)    
+    
+    def get_full_token(self,list_of_tokens):
+        """
+        From a list of list of tokens, to a long list of tokens, duplicate tokens included
+        """
+        return self.breaker(self,self.sep_tok.join(list_of_tokens))
+    
+    def build_vocab(self,seq_list):
+        ct_dict = self.get_token_count_dict(self.get_full_token(seq_list))
+        ct_dict["SOS_TOKEN"] = 9e9
+        ct_dict["EOS_TOKEN"] = 8e9
+        ct_dict[" "] = 7e9
+        tk,ct = list(ct_dict.keys()),list(ct_dict.values())
+        
+        token_df=pd.DataFrame({"token":tk,"count":ct}).sort_values(by="count",ascending=False)
+        return token_df.reset_index().drop("index",axis=1).reset_index().rename(columns={"index":"idx"}).fillna("")[:self.vocab_size]
+
+class fuse(Dataset):
+    def __init__(self,*datasets):
+        self.datasets = datasets
+        bs_s = set(list(d.bs for d in self.datasets))
+        length_s = set(list(len(d) for d in self.datasets))
+        assert len(bs_s) ==1, "batch sized not matched"
+        assert len(length_s) ==1, "dataset lenth not matched"
+        self.bs = list(bs_s)[0]
+        self.length = list(length_s)[0]
+        
+    def __len__(self):
+        return self.length
+    
+    def __getitem__(self,idx):
+        return tuple(d.__getitem__(idx) for d in self.datasets)
+    
+def collate(batch):
+    return tuple(i[0] for i in zip(*batch))
