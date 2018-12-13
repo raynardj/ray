@@ -6,5 +6,6 @@ setup(
     version="0.2.0",
     author_email="raynard@rasenn.com",
     description="Ray's tool for machine learning",
-    packages=find_packages()
+    package_dir={'matchbox': 'matchbox'},
+    packages=['matchbox'],
 )
