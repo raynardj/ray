@@ -380,7 +380,8 @@ class Seq_Dataset(Dataset):
         return self.BN
     
     def __getitem__(self,idx):
-        seq_crop = self.seq[idx:idx+self.bs]
+        start_ = self.bs * idx
+        seq_crop = self.seq[start_:start_+self.bs]
         return self.process_batch(seq_crop)
     
     def make_breaker(self):
