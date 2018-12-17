@@ -207,32 +207,3 @@ def save_mlconf(conf_module):
 
 def read_mlconf(conf_path):
     return json.load(open(conf_path))
-
-from datetime import datetime
-class whosslow:
-    """
-    who is slow
-    """
-    def __init__(self,task_name = "task"):
-        self.task_name = task_name
-        self.start_time = datetime.now()
-        self.window_dict = dict()
-        
-    def start(self):
-        self.mark = "start_step"
-        self.start_time = datetime.now()
-        
-    def name_frame(self,step1,step2):
-        return "[step:\t%s]\t==>[step:\t%s]"%(step1,step2)
-        
-    def step(self,stepname):
-        stepframe = self.name_frame(self.mark,stepname)
-        newtime = datetime.now()
-        if stepframe in self.window_dict.keys():
-            self.window_dict[stepframe]+=(newtime-self.start_time)
-        else:
-            self.window_dict[stepframe]=newtime-self.start_time
-        self.start_time = newtime
-        self.mark=stepname
-    def result(self):
-        return self.window_dict
