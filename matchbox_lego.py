@@ -95,7 +95,7 @@ class DeepMaskAttLSTM(nn.Module):
         """
         mask_activation: Activation layer to the mask, right before applying the mask
             one of "softmax","sigmoid","passon", "passon" means no activation
-        extra_mask_layers: int number, how many hidden layers does mask_maker use   
+        extra_mask_layers: int number, how many hidden layers does mask_maker use?   
         Attentional LSTM
         input_size: input dimension
         hidden_size: hidden dimension, also the output dimention of LSTM
