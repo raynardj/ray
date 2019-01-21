@@ -7,5 +7,5 @@ setup(
     author="raynardj",
     author_email="raynard@rasenn.com",
     description="Ray's tool for machine learning",
-    py_modules=['matchbox','lprint','matchbox_lego','armory'],
+    py_modules=['matchbox','b4tab','lprint','matchbox_lego','armory'],
 )
